@@ -1,0 +1,16 @@
+{
+  "name": "yggdrasil",
+  "version": "0.0.1",
+  "description": "Framework for hypr-based graph information systems",
+  "author": "Christopher Harrison",
+  "license": "GPLv3",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wtsi-hgi/yggdrasil.git"
+  },
+  "keywords": [ "hypr", "graph", "http", "giant global graph", "ggg" ],
+  "bugs": {
+    "url": "https://github.com/wtsi-hgi/yggdrasil/issues"
+  }
+}
