@@ -9,6 +9,14 @@
     "type": "git",
     "url": "https://github.com/wtsi-hgi/yggdrasil.git"
   },
+  "scripts": {
+    "test": "mocha"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "mocha": "*"
+  },
   "keywords": [ "hypr", "graph", "http", "giant global graph", "ggg" ],
   "bugs": {
     "url": "https://github.com/wtsi-hgi/yggdrasil/issues"
