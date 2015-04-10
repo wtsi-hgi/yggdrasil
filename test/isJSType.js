@@ -17,7 +17,7 @@ var testData = {
 };
 
 var testType = function(type) {
-  describe('#' + type + '()', function() {
+  describe('.' + type + '()', function() {
     it('should only validate ' + type + ' values', function() {
       for (t in testData) {
         for (i in testData[t]) {
@@ -28,7 +28,7 @@ var testType = function(type) {
   });
 };
 
-describe('isJSType', function() {
+describe('isJSType Module', function() {
   for (t in testData) {
     testType(t); 
   }
