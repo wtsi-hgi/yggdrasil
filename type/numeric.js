@@ -1,11 +1,10 @@
 // GPLv3 or later
 // Copyright (c) 2015 Genome Research Limited
 
-var Type     = require('./interface.js'),
-    isJSType = require('./isJSType.js');
+var isJSType = require('./isJSType.js');
 
 // Convert subtype specification string into object
-var parseSubtype = (function() {
+module.exports = (function() {
   // This is split up into multiple regular expressions to make
   // our future lives waaaay easier!!
   var set    = /^(int|float)\b/,
@@ -127,7 +126,3 @@ var parseSubtype = (function() {
     return output;
   };
 })();
-
-// Numeric data type
-var Numeric = new Type(parseSubtype);
-module.exports = Numeric;
