@@ -4,7 +4,7 @@
 var assert  = require('assert'),
     numeric = require('../type/numeric.js');
 
-describe('Numeric Type Parser', function() {
+describe('Numeric Type Checker', function() {
   it('should fallback to float', function() {
     var t = numeric('foobar');
     assert.equal('float',   t.set);
@@ -12,7 +12,6 @@ describe('Numeric Type Parser', function() {
     assert.equal(Infinity,  t.interval.range.max);
     assert.equal(false,     t.interval.strict.min);
     assert.equal(false,     t.interval.strict.max);
-    assert.equal(true,      t.interval.test(0));
     assert.equal(null,      t.step);
   });
 
@@ -117,5 +116,52 @@ describe('Numeric Type Parser', function() {
   it('should not allow steps larger than the interval width', function() {
     var t = numeric('int[1,2]/5');
     assert.equal(null, t.step);
+  });
+
+  it('should only allow integers when specified as such', function() {
+    var t = numeric('int');
+    assert.equal(true,  t.test(0));
+    assert.equal(true,  t.test(-1));
+    assert.equal(true,  t.test(1));
+    assert.equal(false, t.test(0.5));
+    assert.equal(false, t.test(-1e-1));
+  });
+
+  it('should only allow values within the specified open interval', function() {
+    var t = numeric('float(-5,5)');
+    assert.equal(true,  t.test(0));
+    assert.equal(false, t.test(-5));
+    assert.equal(false, t.test(5));
+  });
+
+  it('should only allow values within the specified half-open interval', function() {
+    var t = numeric('float(-5,5]');
+    assert.equal(true,  t.test(0));
+    assert.equal(false, t.test(-5));
+    assert.equal(true,  t.test(5));
+  });
+
+  it('should only allow values within the specified closed interval', function() {
+    var t = numeric('float[-5,5]');
+    assert.equal(true, t.test(0));
+    assert.equal(true, t.test(-5));
+    assert.equal(true, t.test(5));
+  });
+
+  it('should only allow values at the specified stepping (even integers)', function() {
+    var t = numeric('int[0,)/2');
+    assert.equal(true,  t.test(0));
+    assert.equal(false, t.test(1));
+    assert.equal(true,  t.test(2));
+  });
+
+  it('should only allow values at the specified stepping (quarters)', function() {
+    var t = numeric('float[0,1)/0.25');
+    assert.equal(true,  t.test(0));
+    assert.equal(true,  t.test(0.25));
+    assert.equal(true,  t.test(0.5));
+    assert.equal(false, t.test(0.6));
+    assert.equal(true,  t.test(0.75));
+    assert.equal(false, t.test(1));
   });
 });

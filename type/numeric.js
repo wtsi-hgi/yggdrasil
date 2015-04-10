@@ -21,6 +21,11 @@ module.exports = (function() {
     };
   })();
 
+  // Simple check for integers
+  var isInteger = function(x) {
+    return Math.floor(x) == x;
+  };
+
   // Real bounded interval constructor
   var Interval = function(lTerm, min, max, rTerm) {
     var strict,
@@ -81,7 +86,7 @@ module.exports = (function() {
     }
   };
 
-  // Parser
+  // Parser and Checker
   return function(subtype) {
     var match,
         output = {
@@ -122,6 +127,34 @@ module.exports = (function() {
         }
       }
     }
+
+    // Check if x is in the set
+    output.test = function(x) {
+      // Type check arguments
+      if (!isJSType.number(x)) {
+        throw new TypeError('Type is numeric');
+      }
+
+      // Check integers
+      if (output.set == 'int' && !isInteger(x)) {
+        return false;
+      }
+
+      // Check interval membership
+      if (!output.interval.test(x)) {
+        return false;
+      }
+
+      // Check stepping
+      // FIXME This isn't resilient to floating point rounding
+      if (output.step) {
+        if (!isInteger((x - output.interval.range.min) / output.step)) {
+          return false;
+        }
+      }
+
+      return true;
+    };
 
     return output;
   };
