@@ -23,6 +23,7 @@ var isJSType = (function() {
     string:    ['string'],
     number:    ['number'],
     boolean:   ['boolean'],
+    function:  ['function'],
     undefined: ['undefined'],
     array:     ['object', Array],
     object:    ['object', Object],
