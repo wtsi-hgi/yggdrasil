@@ -43,7 +43,7 @@ var isJSType = (function() {
   return output;
 })();
 
-// Homogeneous collections (.arrayOf and .objectOf)
+// Homogeneous collections: .arrayOf and .objectOf
 // Note that this isn't chainable :(
 (function() {
   var primitives  = Object.keys(isJSType),
@@ -55,16 +55,15 @@ var isJSType = (function() {
 
       primitives.forEach(function(type) {
         output[type] = function(x) {
-          var param = {
-            array:  { index: x,
-                      test:  isJSType[type] },
-            object: { index: Object.keys(x),
-                      test:  function(a) { return isJSType[type](x[a]); } }
-          };
+          var vals = x;
+          if (isJSType.object(x)) {
+            // This would work on arrays, but that would be redundant
+            vals = Object.keys(x).map(function(a) { return x[a]; });
+          }
 
           return isJSType[coll](x)
-              && param[coll].index.length
-              && param[coll].index.every(param[coll].test);
+              && vals.length // Empty => Not a collection of anything
+              && vals.every(isJSType[type]);
         };
       });
 
