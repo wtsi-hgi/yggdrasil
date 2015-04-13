@@ -109,11 +109,14 @@ module.exports = (function() {
   
     if (t) {
       output.pattern = is[t](subtype);
-      output.test = validate[t](output.pattern);
+      output.test = function(x) {
+        return isJSType.string(x)
+            && validate[t](output.pattern)(x);
+      }
 
     } else {
-      // Vacuously validate free text
-      output.test = function() { return true; }
+      // Vacuously validate free text (presuming it's a string)
+      output.test = isJSType.string;
     }
 
     return output;
