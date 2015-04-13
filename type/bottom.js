@@ -3,4 +3,4 @@
 
 // This one is *really* simple!
 var isJSType = require('./isJSType');
-module.exports = function() { return {test: isJSType.boolean}; };
+module.exports = function() { return {test: isJSType.null}; };
