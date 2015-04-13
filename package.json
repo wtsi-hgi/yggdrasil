@@ -10,7 +10,7 @@
     "url": "https://github.com/wtsi-hgi/yggdrasil.git"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --recursive"
   },
   "dependencies": {
     "email-addresses": "*"

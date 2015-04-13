@@ -2,7 +2,7 @@
 // Copyright (c) 2015 Genome Research Limited
 
 var assert   = require('assert'),
-    isJSType = require('../type/isJSType');
+    isJSType = require('../../type/isJSType');
 
 var typeData = {
   string:    ['', 'foo', '123'],

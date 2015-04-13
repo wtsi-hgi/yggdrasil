@@ -2,7 +2,7 @@
 // Copyright (c) 2015 Genome Research Limited
 
 var assert = require('assert'),
-    slice  = require('../query/slice');
+    slice  = require('../../query/slice');
 
 describe('Slice Query Parser', function() {
   it('should accept defined endpoints', function() {

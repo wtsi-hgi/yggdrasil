@@ -2,7 +2,7 @@
 // Copyright (c) 2015 Genome Research Limited
 
 var assert  = require('assert'),
-    textual = require('../type/textual');
+    textual = require('../../type/textual');
 
 describe('Textual Type Checker', function() {
   it('should validate any free text', function() {

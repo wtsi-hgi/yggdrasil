@@ -1,7 +1,7 @@
 // GPLv3 or later
 // Copyright (c) 2015 Genome Research Limited
 
-var value = require('../query/value');
+var value = require('../../query/value');
 
 describe('Value Query Compiler', function() {
   it('should validate a simple equality predicate', function() {

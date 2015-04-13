@@ -2,7 +2,7 @@
 // Copyright (c) 2015 Genome Research Limited
 
 var assert  = require('assert'),
-    numeric = require('../type/numeric');
+    numeric = require('../../type/numeric');
 
 describe('Numeric Type Checker', function() {
   it('should fallback to float', function() {

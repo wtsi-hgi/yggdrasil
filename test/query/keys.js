@@ -2,7 +2,7 @@
 // Copyright (c) 2015 Genome Research Limited
 
 var assert = require('assert'),
-    keys   = require('../query/keys');
+    keys   = require('../../query/keys');
 
 var test = {foo: 'bar', baz: 'quux'};
 
