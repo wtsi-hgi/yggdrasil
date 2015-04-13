@@ -48,13 +48,12 @@ describe('Textual Type Checker', function() {
   });
 
   it('should validate IRIs', function() {
-    // Not a full test suite, as just a wrapper
+    // Vacuously validate IRIs, but semantically marked for context
     var t = textual('iri');
     assert.equal('iri', t.pattern);
     assert.equal(true, t.test('http://www.sanger.ac.uk'));
     assert.equal(true, t.test('https://www.google.com/foo'));
     assert.equal(true, t.test('/absolute/path'));
-    assert.equal(false, t.test('foo'));
   });
 
   it('should validate e-mail addresses', function() {

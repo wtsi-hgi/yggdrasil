@@ -13,11 +13,18 @@
     "test": "mocha"
   },
   "dependencies": {
+    "email-addresses": "*"
   },
   "devDependencies": {
     "mocha": "*"
   },
-  "keywords": [ "hypr", "graph", "http", "giant global graph", "ggg" ],
+  "keywords": [
+    "hypr",
+    "graph",
+    "http",
+    "giant global graph",
+    "ggg"
+  ],
   "bugs": {
     "url": "https://github.com/wtsi-hgi/yggdrasil/issues"
   }

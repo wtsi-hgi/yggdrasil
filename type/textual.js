@@ -1,7 +1,8 @@
 // GPLv3 or later
 // Copyright (c) 2015 Genome Research Limited
 
-var isJSType = require('./isJSType');
+var isJSType   = require('./isJSType'),
+    parseEMail = require('email-addresses');
 
 // Convert subtype specification string into object
 module.exports = (function() {
@@ -88,19 +89,15 @@ module.exports = (function() {
       }
     },
 
-    // Validate IRIs
-    iri: function() {
-      // TODO
-      return function(input) {
-        return true;
-      }
-    },
+    // Vacuously validate IRIs
+    // i.e., Any string could be an IRI, but we just mark it as such
+    // so that is has semantics that differ from free text
+    iri: function() { return function() { return true; } },
 
     // Validate e-mails
     email: function() {
-      // TODO
       return function(input) {
-        return true;
+        return parseEMail(input) ? true : false;
       }
     }
   };
