@@ -13,7 +13,8 @@
     "test": "mocha --recursive"
   },
   "dependencies": {
-    "email-addresses": "*"
+    "email-addresses": "*",
+    "fast-levenshtein": "*"
   },
   "devDependencies": {
     "mocha": "*"
