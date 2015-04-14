@@ -29,7 +29,7 @@ module.exports = (function() {
   var classify = function(type) {
     return type && Object.keys(is).reduce(function(a, t) {
       return !a && is[t](type) !== false ? t : a;
-    }, false);
+    }, undefined);
   };
 
   // Validation functions

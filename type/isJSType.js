@@ -43,13 +43,12 @@ var isJSType = (function() {
   return output;
 })();
 
-// Homogeneous collections: .arrayOf and .objectOf
-// Note that this isn't chainable :(
 (function() {
-  var primitives  = Object.keys(isJSType),
-      collections = ['array', 'object'];
+  var primitives  = Object.keys(isJSType);
 
-  collections.forEach(function(coll) {
+  // Homogeneous collections: .arrayOf and .objectOf
+  // Note that these aren't chainable :(
+  ['array', 'object'].forEach(function(coll) {
     isJSType[coll + 'Of'] = (function() {
       var output = {};
 
@@ -70,6 +69,13 @@ var isJSType = (function() {
       return output;
     })();
   });
+
+  // Primitive type deduction
+  isJSType.whatIs = function(input) {
+    return primitives.reduce(function(a, t) {
+      return !a && isJSType[t](input) ? t : a;
+    }, undefined);
+  };
 })();
 
 module.exports = isJSType;

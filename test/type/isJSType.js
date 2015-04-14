@@ -69,10 +69,21 @@ var collectionTest = function(collection, type) {
   });
 };
 
+var deductionTest = function(type) {
+  describe('.whatIs() on ' + type, function() {
+    it('should deduce ' + type, function() {
+      for (i in typeData[type]) {
+        assert.equal(type, isJSType.whatIs(typeData[type][i]));
+      }
+    });
+  });
+};
+
 describe('JavaScript Type Checker', function() {
   for (t in typeData) {
     typeTest(t);
     collectionTest('array', t);
     collectionTest('object', t);
+    deductionTest(t);
   }
 });

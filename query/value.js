@@ -8,15 +8,7 @@ var isJSType    = require('../type/isJSType'),
 // source is always a string, which must be coerced into target's type
 // target can be string, number, Boolean or null
 var coerce = function(source, target) {
-  var targetType = Object.keys(isJSType).reduce(function(a, t) {
-    return !a
-        && isJSType.function(isJSType[t])
-        && isJSType[t](target)
-         ? t
-         : a;
-  }, false);
-  
-  switch(targetType) {
+  switch(isJSType.whatIs(target)) {
     case 'string':
       return String(source);
       break;
