@@ -11,6 +11,22 @@ describe('Value Query Compiler', function() {
     assert.equal(false, t.test({foo: 'baz'}));
   });
 
+  it('should validate a simple equality predicate with a \'?\' wildcard', function() {
+    var t = value('(foo=bar?)');
+    assert.equal(false, {});
+    assert.equal(true,  t.test({foo: 'barX'}));
+    assert.equal(false, t.test({foo: 'bar'}));
+  });
+
+  it('should validate a simple equality predicate with a \'*\' wildcard', function() {
+    var t = value('(foo=bar*)');
+    assert.equal(false, {});
+    assert.equal(true,  t.test({foo: 'bar'}));
+    assert.equal(true,  t.test({foo: 'barX'}));
+    assert.equal(true,  t.test({foo: 'barXXX'}));
+    assert.equal(false, t.test({foo: 'ba'}));
+  });
+
   it('should validate a simple inequality predicate (GTE)', function() {
     var t = value('(foo>=0)');
     assert.equal(false, t.test({foo: 'bar'}));

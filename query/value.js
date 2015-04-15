@@ -67,13 +67,38 @@ var lexicon = {
   // Thus, where appropriate, we coerce its value to match the type of
   // the data pointed to by the LHS.
 
-  // TODO Wildcard support on string equality
-
   // Equality comparator (infix)
+  // Supports * (any) and ? (single) wildcards, escaped using \, on strings
   "=": function(lhs, rhs) {
+    var hasWildcards = function(input) {
+      return /(?:[^\\]|^)[*?]/g.test(input);
+    };
+
+    var matchWildcard = function(pattern, input) {
+      // DRAGONS BE HERE...
+      // First we escape all potent regexp punctuation
+      // Reverse the string because JS doesn't support -ve lookbehinds
+      // Replace our escaped punctuation with regexp equivalents
+      // Unescape any double-escaped punctuation
+      // Reverse the string back (hence *. rather than .*)
+      // Anchor the pattern to match the whole string
+      var re = pattern.replace(/[\\^$+.*?()|{}[\]]/g, '\\$&')
+                      .split('').reverse().join('')
+                      .replace(/(\*\\(?!\\))+/g, '*.')
+                      .replace(/\?\\(?!\\)/g, '.')
+                      .replace(/([*?])\\\\/g, '$1')
+                      .split('').reverse().join('')
+                      .replace(/^.*$/, '^$&$');
+
+      // FIXME This still isn't perfect: It won't correctly convert
+      // '\\?' or '\\*', meaning '\' followed by one/any character(s)
+      return RegExp(re).test(input);
+    };
+
     return function(input) {
       return input.hasOwnProperty(lhs)
-          && input[lhs] == coerce(rhs, input[lhs]);
+          && (hasWildcards(rhs) ? matchWildcard(rhs, input[lhs])
+                                : input[lhs] == coerce(rhs, input[lhs]));
     };
   },
 
