@@ -77,7 +77,7 @@ var lexicon = {
     var matchWildcard = function(pattern, input) {
       // DRAGONS BE HERE...
       // First we escape all potent regexp punctuation
-      // Reverse the string because JS doesn't support -ve lookbehinds
+      // Reverse the string because JS only supports -ve lookaheads
       // Replace our escaped punctuation with regexp equivalents
       // Unescape any double-escaped punctuation
       // Unescape any double-escaped wildcards
