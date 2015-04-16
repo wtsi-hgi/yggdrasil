@@ -47,6 +47,7 @@ var coerce = function(source, target) {
   }
 };
 
+// Functional lexicon, which are used to make up the nodes of the AST
 var lexicon = {
   // Conjunction clause (prefix)
   and: function(op1, op2) {
@@ -140,8 +141,123 @@ var lexicon = {
   }
 };
 
+// Parser
+var grammar = {
+  // expression = "(" ( clause / predicate ) ")"
+  expression: function(tokens) {
+    // TODO
+  },
+
+  // clause = conjugation / disjunction / negation
+  clause:function(tokens) {
+    // TODO
+  },
+
+  // conjunction = "and" expression expression
+  conjunction: function(tokens) {
+    // TODO
+  },
+
+  // disjunction = "or" expression expression
+  disjunction: function(tokens) {
+    // TODO
+  },
+
+  // negations = "not" expression
+  negation: function(tokens) {
+    // TODO
+  },
+
+  // predicate = key comparator value
+  predicate: function(tokens) {
+    // TODO
+  },
+
+  // key = <JSON has key>
+  key: function(tokens) {
+    // TODO
+  },
+
+  // comparator = [ "<" / ">" / "~" ] "="
+  comparator: function(tokens) {
+    // TODO
+  },
+
+  // value = <arbitrary, escaped string>
+  value: function(tokens) {
+    // TODO
+  }
+};
+
+// Consume an escaped string and convert into an array of tokens, by
+// delimiter and unescaped string.
+var tokenise = (function() {
+  var isDelimiter = /^[()<>~=]$/, isLongDelim = /^[<>~]$/,
+      T = function(delim, value) { return {delim: delim, val: value}; };
+
+  return function(input) {
+    var i = 0, n = input.length,
+        thisC, nextC, lastI, newT,
+        out = [];
+
+    while (i < n) {
+      thisC = input.substr(i, 1);
+      nextC = input.substr(i + 1, 1);
+      newT  = undefined;
+      ++i;
+
+      // Deal with escape sequences
+      if (thisC == '\\') {
+        if (nextC) {
+          ++i;
+          
+          // Special escape sequences
+          switch (nextC) {
+            case 'n': nextC = '\n'; break;
+            case 'r': nextC = '\r'; break;
+            case 't': nextC = '\t'; break;
+          }
+
+          if (lastI !== undefined ? out[lastI].delim : true) {
+            // Context switch
+            newT = T(false, nextC);
+          } else {
+            out[lastI].val += nextC;
+          }
+        } else {
+          // Break the loop on an invalid escape sequence
+          break;
+        }
+
+      // Non-escaped characters
+      } else {
+        if (isDelimiter.test(thisC)) {
+          if (lastI !== undefined && out[lastI].delim && thisC == '=' && isLongDelim.test(out[lastI].val)) {
+            out[lastI].val += thisC;
+          } else {
+            // Context switch
+            newT = T(true, thisC);
+          }
+        } else {
+          if (lastI !== undefined && !out[lastI].delim) {
+            out[lastI].val += thisC;
+          } else {
+            // Context switch
+            newT = T(false, thisC);
+          }
+        }
+      }
+
+      if (newT) { lastI = out.push(newT) - 1; }
+    }
+
+    return out;
+  };
+})();
+
 // Compile value query into executable AST
 module.exports = (function() {
   // TODO compile AST
+  // TODO Typecheck input
   // TODO execute AST
 })();
