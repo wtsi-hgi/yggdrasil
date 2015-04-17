@@ -6,7 +6,7 @@ var assert = require('assert'),
 
 var test = {foo: 'bar', baz: 'quux'};
 
-describe('Key Query Parser', function() {
+describe('Key Selection Query Parser', function() {
   it('should select specified keys (1/3)', function() {
     var filtered = keys('foo', test),
         fKeys = Object.keys(filtered);
