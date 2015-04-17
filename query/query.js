@@ -5,7 +5,7 @@ var isJSType    = require('../type/isJSType'),
     levenshtein = require('fast-levenshtein');
 
 // Type coercion
-// source is always a string, which must be coerced into target's type
+// source is always a string, which must be coerced into target's type;
 // target can be string, number, Boolean or null
 var coerce = function(source, target) {
   switch(isJSType.whatIs(target)) {
@@ -47,7 +47,8 @@ var coerce = function(source, target) {
   }
 };
 
-// Functional lexicon, which are used to make up the nodes of the AST
+// Functional lexicon, the members of which are used to make up the
+// nodes of the parsed AST
 var lexicon = {
   // Conjunction clause (prefix)
   and: function(op1, op2) {
@@ -190,7 +191,7 @@ var grammar = {
 };
 
 // Consume an escaped string and convert into an array of tokens, by
-// delimiter and unescaped string.
+// delimiter and unescaped strings... This is a bit messy :P
 var tokenise = (function() {
   var isDelimiter = /^[()<>~=]$/, isLongDelim = /^[<>~]$/,
       T = function(delim, value) { return {delim: delim, val: value}; };
@@ -255,9 +256,20 @@ var tokenise = (function() {
   };
 })();
 
-// Compile value query into executable AST
-module.exports = (function() {
-  // TODO compile AST
-  // TODO Typecheck input
-  // TODO execute AST
-})();
+// Compile query into executable AST
+module.exports = function(source) {
+  var tokens = tokenise(source),
+      ast    = grammar.expression(tokens);
+
+  if (isJSType.function(ast)) {
+    // Successfully compiled
+    return function(input) {
+      return isJSType.object(input)
+          && ast(input);
+    }
+
+  } else {
+    // Compilation failure
+    return undefined;
+  }
+};
