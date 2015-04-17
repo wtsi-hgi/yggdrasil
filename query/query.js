@@ -145,48 +145,121 @@ var lexicon = {
 // Parser
 var grammar = {
   // expression = "(" ( clause / predicate ) ")"
+  // :: token array -> expression function | original token array
   expression: function(tokens) {
-    // TODO
+    var t, original = tokens.slice(),
+        expression;
+
+    if ((t = tokens.slice()) && t.delim && t.val == '(') {
+      expression = grammar.clause(tokens);
+      if (isJSType.array(expression)) {
+        // Not a clause, so try a predicate
+        expression = grammar.predicate(expression);
+      }
+
+      if (isJSType.function(expression)) {
+        // DAMMIT!
+        // The parser has lost track of what has been consumed and what
+        // hasn't at this point... Back to the drawing board :P
+
+      } else {
+        // Invalid expression
+        return original;
+      }
+    } else {
+      // Not an expression
+      return original;
+    }   
   },
 
-  // clause = conjugation / disjunction / negation
-  clause:function(tokens) {
-    // TODO
+  // clause = junction / negation
+  // :: token array -> clause function | original token array
+  clause: function(tokens) {
+    var clause;
+    
+    // Do we have a con/disjunction?
+    clause = grammar.junction(tokens);
+    if (isJSType.array(clause)) {
+      // Not a con/disjunction, so try a negation
+      clause = grammar.negation(clause);
+    }
+
+    return clause;
   },
 
-  // conjunction = "and" expression expression
-  conjunction: function(tokens) {
-    // TODO
+  // junction = ( "and" / "or" ) expression expression
+  // :: token array -> junction function | original token array
+  junction: function(tokens) {
+    var t, original = tokens.slice(),
+        junction, expr1, expr2;
+
+    if ((t = tokens.shift()) && !t.delim && /^or|and$/.test(t.val)) {
+      junction = t.val;
+      expr1 = grammar.expression(tokens);
+      if (isJSType.function(expr1)) {
+        expr2 = grammar.expression(tokens);
+        if (isJSType.function(expr2)) {
+          return lexicon[junction](expr1, expr2);
+
+        } else {
+          // Con/disjunction without second expression
+          return original;
+
+      } else {
+        // Con/disjunction without first expression
+        return original;
+
+    } else {
+      // Not a con/disjunction
+      return original;
+    }
   },
 
-  // disjunction = "or" expression expression
-  disjunction: function(tokens) {
-    // TODO
-  },
-
-  // negations = "not" expression
+  // negation = "not" expression
+  // :: token array -> negation function | original token array
   negation: function(tokens) {
-    // TODO
+    var t, original = tokens.slice(),
+        expression;
+
+    if ((t = tokens.shift()) && !t.delim && t.val == 'not') {
+      expression = grammar.expression(tokens);
+      if (isJSType.function(expression)) {
+        return lexicon.not(expression);
+
+      } else {
+        // Negation without an expression
+        return original;
+      }
+    } else {
+      // Not a negation
+      return original;
+    }
   },
 
   // predicate = key comparator value
+  // :: token array -> comparator function | original token array
   predicate: function(tokens) {
-    // TODO
-  },
+    var t, original = tokens.slice(),
+        key, comparator, value;
 
-  // key = <JSON has key>
-  key: function(tokens) {
-    // TODO
-  },
+    if((t = tokens.shift()) && !t.delim) {
+      // Found a valid key
+      key = t.val;
+      if ((t = tokens.shift()) && t.delim && lexicon.hasOwnProperty(t.val)) {
+        // Found a valid comparator
+        comparator = t.val;
+        if ((t = tokens.shift()) && !t.delim) {
+          // Found a valid value... yay!
+          value = t.val;
+        }
+      }
+    }
 
-  // comparator = [ "<" / ">" / "~" ] "="
-  comparator: function(tokens) {
-    // TODO
-  },
-
-  // value = <arbitrary, escaped string>
-  value: function(tokens) {
-    // TODO
+    if (key && comparator && value) {
+      return lexicon[comparator](key, value);
+    } else {
+      return original;
+    }
   }
 };
 
