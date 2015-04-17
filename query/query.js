@@ -72,35 +72,37 @@ var lexicon = {
   // Equality comparator (infix)
   // Supports * (any) and ? (single) wildcards, escaped using \, on strings
   "=": function(lhs, rhs) {
-    var hasWildcards = function(input) {
-      return /(?:[^\\]|^)[*?]/g.test(input);
-    };
+    var equals;
 
-    var matchWildcard = function(pattern, input) {
+    if (/(?:[^\\]|^)(?:\\\\)*[*?]/.test(rhs)) {
       // DRAGONS BE HERE...
       // First we escape all potent regexp punctuation
-      // Reverse the string because JS only supports -ve lookaheads
+      // Reverse the string because JS only supports -ve lookAHEADs
       // Replace our escaped punctuation with regexp equivalents
       // Unescape any double-escaped punctuation
       // Unescape any double-escaped wildcards
       // Reverse the string back (hence *. rather than .*)
       // Anchor the pattern to match the whole string
-      var re = pattern.replace(/[\\^$+.*?()|{}[\]]/g, '\\$&')
-                      .split('').reverse().join('')
-                      .replace(/(\*\\(?!\\))+/g, '*.')
-                      .replace(/\?\\(?!\\)/g, '.')
-                      .replace(/([*?])\\\\/g, '$1')
-                      .replace(/(?:(\*)|\?)\\\\\\(?!\\)/g, '$1.\\')
-                      .split('').reverse().join('')
-                      .replace(/^.*$/, '^$&$');
+      rhs = new RegExp(rhs.replace(/[\\^$+.*?()|{}[\]]/g, '\\$&')
+                          .split('').reverse().join('')
+                          .replace(/(\*\\(?!\\))+/g, '*.')
+                          .replace(/\?\\(?!\\)/g, '.')
+                          .replace(/([*?])\\\\/g, '$1')
+                          .replace(/(?:(\*)|\?)\\\\\\(?!\\)/g, '$1.\\\\')
+                          .split('').reverse().join('')
+                          .replace(/^.*$/, '^$&$'));
 
-      return RegExp(re).test(input);
-    };
+      equals = function(input) { return rhs.test(input); }
+
+    } else {
+      // Unescape input for simple equality
+      rhs = rhs.replace(/\\(.)/g, '$1');
+      equals = function(input) { return input == coerce(rhs, input); };
+    }
 
     return function(input) {
       return input.hasOwnProperty(lhs)
-          && (hasWildcards(rhs) ? matchWildcard(rhs, input[lhs])
-                                : input[lhs] == coerce(rhs, input[lhs]));
+          && equals(input[lhs])
     };
   },
 
@@ -292,6 +294,13 @@ var tokenise = (function() {
             case 'n': nextC = '\n'; break;
             case 'r': nextC = '\r'; break;
             case 't': nextC = '\t'; break;
+
+            // Preserve escaped wildcards and escaper
+            case '*':
+            case '?':
+            case '\\':
+              nextC = '\\' + nextC;
+              break;
           }
 
           if (lastI !== undefined ? out[lastI].delim : true) {
