@@ -143,101 +143,102 @@ var lexicon = {
 };
 
 // Parser
+// All functions take an input token array and return an object with
+// either one or two properties:
+// * tokens  The remaining tokens left to parse, equal to the input
+//           array in the event of a parse error.
+// * exec    The compiled input, if everything worked out. Otherwise,
+//           this property won't be present.
 var grammar = {
   // expression = "(" ( clause / predicate ) ")"
-  // :: token array -> expression function | original token array
   expression: function(tokens) {
     var t, original = tokens.slice(),
         expression;
 
-    if ((t = tokens.slice()) && t.delim && t.val == '(') {
+    if ((t = tokens.shift()) && t.delim && t.val == '(') {
+      // Found the opening parenthesis
       expression = grammar.clause(tokens);
-      if (isJSType.array(expression)) {
+      if (!expression.exec) {
         // Not a clause, so try a predicate
-        expression = grammar.predicate(expression);
+        expression = grammar.predicate(expression.tokens);
       }
 
-      if (isJSType.function(expression)) {
-        // DAMMIT!
-        // The parser has lost track of what has been consumed and what
-        // hasn't at this point... Back to the drawing board :P
-
-      } else {
-        // Invalid expression
-        return original;
+      if (expression.exec) {
+        // Found a clause or predicate
+        if ((t = expression.tokens.shift()) && t.delim && t.val == ')') {
+          // Found the closing parenthesis... yay!
+          return expression;
+        }
       }
-    } else {
-      // Not an expression
-      return original;
-    }   
+    }
+
+    // Epic fail
+    return {tokens: original};
   },
 
   // clause = junction / negation
-  // :: token array -> clause function | original token array
   clause: function(tokens) {
-    var clause;
-    
+    var clause
+
     // Do we have a con/disjunction?
     clause = grammar.junction(tokens);
-    if (isJSType.array(clause)) {
+    if (!clause.exec) {
       // Not a con/disjunction, so try a negation
-      clause = grammar.negation(clause);
+      clause = grammar.negation(clause.tokens);
     }
 
     return clause;
   },
 
   // junction = ( "and" / "or" ) expression expression
-  // :: token array -> junction function | original token array
+  // ...Apparently there's no hypernym for dyadic logical connectives
   junction: function(tokens) {
     var t, original = tokens.slice(),
         junction, expr1, expr2;
 
-    if ((t = tokens.shift()) && !t.delim && /^or|and$/.test(t.val)) {
+    if ((t = tokens.shift()) && !t.delim && /^(or|and)$/.test(t.val)) {
+      // Found the "and" or "or" keyword
       junction = t.val;
       expr1 = grammar.expression(tokens);
-      if (isJSType.function(expr1)) {
-        expr2 = grammar.expression(tokens);
-        if (isJSType.function(expr2)) {
-          return lexicon[junction](expr1, expr2);
-
-        } else {
-          // Con/disjunction without second expression
-          return original;
-
-      } else {
-        // Con/disjunction without first expression
-        return original;
-
-    } else {
-      // Not a con/disjunction
-      return original;
+      if (expr1.exec) {
+        // Found the first argument
+        expr2 = grammar.expression(expr1.tokens);
+        if (expr2.exec) {
+          // Found the second argument... yay!
+          return {
+            tokens: expr2.tokens,
+            exec:   lexicon[junction](expr1.exec, expr2.exec)
+          };
+        }
+      }
     }
+
+    // Epic fail
+    return {tokens: original};
   },
 
   // negation = "not" expression
-  // :: token array -> negation function | original token array
   negation: function(tokens) {
     var t, original = tokens.slice(),
         expression;
 
     if ((t = tokens.shift()) && !t.delim && t.val == 'not') {
+      // Found the "not" keyword
       expression = grammar.expression(tokens);
-      if (isJSType.function(expression)) {
-        return lexicon.not(expression);
-
-      } else {
-        // Negation without an expression
-        return original;
-      }
-    } else {
-      // Not a negation
-      return original;
+      if(expression.exec) {
+        // Found a valid expression... yay!
+        return {
+          tokens: expression.tokens,
+          exec:   lexicon.not(expression.exec)
+        };
+      } 
     }
+
+    // Epic fail
+    return {tokens: original};
   },
 
   // predicate = key comparator value
-  // :: token array -> comparator function | original token array
   predicate: function(tokens) {
     var t, original = tokens.slice(),
         key, comparator, value;
@@ -251,15 +252,16 @@ var grammar = {
         if ((t = tokens.shift()) && !t.delim) {
           // Found a valid value... yay!
           value = t.val;
+          return {
+            tokens: tokens,
+            exec:   lexicon[comparator](key, value)
+          };
         }
       }
     }
 
-    if (key && comparator && value) {
-      return lexicon[comparator](key, value);
-    } else {
-      return original;
-    }
+    // Epic fail
+    return {tokens: original};
   }
 };
 
@@ -334,11 +336,11 @@ module.exports = function(source) {
   var tokens = tokenise(source),
       ast    = grammar.expression(tokens);
 
-  if (isJSType.function(ast)) {
+  if (!ast.tokens.length && ast.exec) {
     // Successfully compiled
     return function(input) {
       return isJSType.object(input)
-          && ast(input);
+          && ast.exec(input);
     }
 
   } else {
