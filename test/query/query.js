@@ -4,6 +4,8 @@
 var assert = require('assert'),
     query  = require('../../query/query');
 
+// These tests could probably be a bit more thorough...
+
 describe('Query Compiler', function() {
   it('should validate a simple equality predicate', function() {
     var t = query('(foo=bar)');
@@ -26,6 +28,40 @@ describe('Query Compiler', function() {
     assert.equal(true,  t({foo: 'barX'}));
     assert.equal(true,  t({foo: 'barXXX'}));
     assert.equal(false, t({foo: 'ba'}));
+  });
+  
+  it('should parse escaping and wildcards left-associatively', function() {
+    var t;
+    
+    // * Wildcard
+    t = query('(foo=*)');
+    assert.equal(true, t({foo: ''}));
+    assert.equal(true, t({foo: '*'}));
+    assert.equal(true, t({foo: 'X'}));
+
+    // \* Literal
+    t = query('(foo=\\*)');
+    assert.equal(false, t({foo: ''}));
+    assert.equal(true,  t({foo: '*'}));
+    assert.equal(false, t({foo: 'X'}));
+
+    // \\* Escaped slash followed by wildcard
+    t = query('(foo=\\\\*)');
+    assert.equal(false, t({foo: ''}));
+    assert.equal(false, t({foo: '*'}));
+    assert.equal(false, t({foo: 'X'}));
+    assert.equal(true,  t({foo: '\\'}));
+    assert.equal(true,  t({foo: '\\*'}));
+    assert.equal(true,  t({foo: '\\X'}));
+
+    // \\\* Escaped slash followed by literal
+    t = query('(foo=\\\\\\*)');
+    assert.equal(false, t({foo: ''}));
+    assert.equal(false, t({foo: '*'}));
+    assert.equal(false, t({foo: 'X'}));
+    assert.equal(false, t({foo: '\\'}));
+    assert.equal(true,  t({foo: '\\*'}));
+    assert.equal(false, t({foo: '\\X'}));
   });
 
   it('should validate a simple inequality predicate (GTE)', function() {
